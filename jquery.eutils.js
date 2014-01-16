@@ -1,5 +1,5 @@
 /*
- * jQuery eUtils v0.1
+ * jQuery EUtils v0.1
  * https://github.com/hubgit/jquery-eutils
  *
  * Copyright 2014 Alf Eaton
