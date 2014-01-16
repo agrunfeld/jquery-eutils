@@ -3,6 +3,8 @@ $(function() {
 	var status = $('#status');
 	var results = $('#results');
 
+	var db = 'pubmed';
+
 	$(form).on('submit', function(event) {
 		event.preventDefault();
 
@@ -12,14 +14,14 @@ $(function() {
 
 		var term = this.term.value + " AND pubmed pmc open access[filter] AND free full text[filter]";
 
-		$.eutils.search(term).then(function(result) {
+		$.eutils.search(db, term).then(function(result) {
 			if (!result.count) {
 				return status.text('No articles matched the search terms');
 			}
 
 			status.text('Found ' + result.count + ' articles. Fetching…');
 
-			$.eutils.summary(result).then(function(result) {
+			$.eutils.summary(db, result).then(function(result) {
 				$.each(result, function() {
 					var item = $('<a/>', {
 						href: 'https://www.ncbi.nlm.nih.gov/pmc/articles/' + this.pmc,
