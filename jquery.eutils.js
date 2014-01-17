@@ -10,14 +10,14 @@
  */
  (function($) {
  	$.eutils = {
- 		search: function(db, term) {
- 			var data = {
-				db: db,
+ 		search: function(term, params) {
+ 			var data = $.extend({
+				db: 'pubmed',
 				retmode: 'xml',
 				usehistory: 'y',
 				retmax: 0,
 				term: term
-			};
+			}, params);
 
 			var template = {
 				count: 'eSearchResult/Count',
@@ -25,18 +25,18 @@
 				querykey: 'eSearchResult/QueryKey'
 			};
 
- 			return get('esearch.fcgi', data, template);
+ 			return $.eutils.get('esearch.fcgi', data, template);
  		},
 
- 		summary: function(db, result, retmax, retstart) {
- 			var data = {
-				db: db,
+ 		summary: function(result, params) {
+ 			var data = $.extend({
+				db: 'pubmed',
 				retmode: 'xml',
 				WebEnv: result.webenv,
 				query_key: result.querykey,
-				retmax: retmax || 10,
-				retstart: retstart || 0,
-			};
+				retmax: 10,
+				retstart: 0,
+			}, params);
 
 			var template = [
 				'/eSummaryResult/DocSum',
@@ -48,33 +48,29 @@
 				}
 			];
 
-			return get('esummary.fcgi', data, template);
- 		}
- 	};
+			return $.eutils.get('esummary.fcgi', data, template);
+ 		},
 
- 	var get = function(service, data, template) {
-		var deferred = $.Deferred();
-		var promise = deferred.promise();
+ 		get: function(service, data, template) {
+			var deferred = $.Deferred();
 
-		var request = $.ajax({
-			url: 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/' + service,
-			data: data,
-			dataType: 'xml',
-		});
+			var request = $.ajax({
+				url: 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/' + service,
+				data: data,
+				dataType: 'xml',
+			});
 
-		request.done(function(doc, status, xhr) {
-			if (doc) {
-				var result = Jath.parse(template, doc);
-				deferred.resolve(result, status, xhr);
-			} else {
-				deferred.reject(request, 'error');
-			}
-		});
+			request.done(function(doc, status, xhr) {
+				if (doc) {
+					deferred.resolve(Jath.parse(template, doc), status, xhr);
+				} else {
+					deferred.reject(request, 'error');
+				}
+			});
 
-		request.fail(function(jqXHR, status, error) {
-			deferred.reject(jqXHR, status, error);
-		});
+			request.fail(deferred.reject);
 
-		return promise;
+			return deferred.promise();
+		}
  	};
  })(jQuery);
